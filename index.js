@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -43,6 +43,14 @@ async function run() {
             const result = await cursor.toArray();
 
             res.send(result)
+        });
+
+
+        app.get('/movie/:id', async(req, res) =>{
+            const id = req.params.id;
+            const query = {_id: new ObjectId(id)}
+            const result = await movieCollection.findOne(query);
+            res.send(result);
         })
 
         app.post('/movie', async (req, res) => {
@@ -51,6 +59,39 @@ async function run() {
             const result= await movieCollection.insertOne(newMovie)
             res.send(result)
         })
+
+
+        app.put('/movie/:id', async(req, res) =>{
+            const id = req.params.id;
+            const filter = {_id: new ObjectId(id)}
+            const options = {upsert: true};
+            const updateMovie = req.body;
+            const movie = {
+                $set: {
+                    name: updateMovie.name,
+                    quantity: updateMovie.quantity,
+                    supplier: updateMovie.supplier,
+                    taste: updateMovie.taste,
+                    category: updateMovie.category,
+                    details: updateMovie.details,
+                    photo: updateMovie.photo
+                }
+            }
+
+            const result = await movieCollection.updateOne(filter, movie, options);
+            res.send(result)
+        })
+
+
+
+        app.delete('/movie/:id', async(req, res) =>{
+            const id = req.params.id;
+            const query = {_id: new Object(id)}
+            const result = await movieCollection.deleteOne(query);
+            res.send(result)
+        })
+
+
 
 
         // Send a ping to confirm a successful connection
